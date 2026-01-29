@@ -11,7 +11,7 @@ app.get('/health', (req, res) => {
         acceptEncoding: req.headers['accept-encoding']
     };
    return res.status(200).json({
-        message: 'server is working fine',
+        message: 'server is working fine yoo!!!, with ci cd working',
         client: clientInfo
     })
 })
