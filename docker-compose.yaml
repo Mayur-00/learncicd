@@ -6,3 +6,35 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    networks:
+      - monitoring          
+
+  prom-server:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus-config.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring          
+
+  grafana:
+    image: grafana/grafana-oss
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prom-server
+      - loki                
+    networks:
+      - monitoring         
+
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - monitoring          
+
+networks:
+  monitoring:
+    driver: bridge
