@@ -3,6 +3,7 @@ import responseTime from 'response-time';
 import client from "prom-client"
 import { logger } from './logger.js';
 import { doHeavyTask } from './utils.js';
+import { observabilityMiddleware } from './middleware.js';
 const app = express();
 const port = process.env.port ?? 8080;
 
@@ -10,29 +11,7 @@ const collectDefaultMetrics = client.collectDefaultMetrics;
 
 collectDefaultMetrics({register:client.register});
 
-const reqTime = new client.Histogram({
-    name:"http_express_req_res_time",
-    message:"Time Taken by req and res",
-    labelNames:["method", "route", "status_code"],
-    buckets:[1, 50 ,100, 200, 400, 500, 800, 1000, 2000],
-    help:"time taken by req and res"
-});
-
-const totalRequestCounter = new client.Counter({
-    name:"total_req",
-    help:"Tells Total requests on the server"
-})
-
-app.use(responseTime((req, res, time) => {
-    totalRequestCounter.inc();
-    reqTime.labels( 
-        {
-            method:req.method,
-            route:req.url,
-            status_code:res.statusCode
-        }
-    ).observe(time)
-}))
+app.use(observabilityMiddleware)
 
 app.get('/health', (req, res) => {
 
